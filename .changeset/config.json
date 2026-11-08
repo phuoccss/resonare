@@ -1,12 +1,12 @@
 {
-	"$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-	"changelog": [
-		"@changesets/changelog-github",
-		{ "repo": "phuoccss/resonare" }
-	],
-	"commit": false,
-	"access": "restricted",
-	"baseBranch": "main",
-	"updateInternalDependencies": "patch",
-	"ignore": []
+  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "phuoccss/resonare" }
+  ],
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
 }

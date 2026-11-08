@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "allowArbitraryExtensions": true,
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "checkJs": true,
+    "composite": true,
+    "declaration": true,
+    "isolatedDeclarations": false,
+    "emitDeclarationOnly": true,
+    "erasableSyntaxOnly": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "module": "esnext",
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "noEmit": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveWatchOutput": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "es2023",
+    "verbatimModuleSyntax": true
+  },
+  "exclude": ["**/dist", "**/node_modules"]
+}

@@ -1,7 +1,12 @@
 ---
-import { ThemeSelect, themeScript } from './_lite'
+import { ThemeSelect as ReactThemeSelect } from '../integration/theme-select-react-lite'
+import { ThemeSelect as SolidThemeSelect } from '../integration/theme-select-solid-lite'
+import SvelteThemeSelect from '../integration/theme-select-svelte-lite.svelte'
+import VueThemeSelect from '../integration/theme-select-vue-lite.vue'
+import { liteThemeScript as themeScript } from '../integration/shared'
 import './_style.css'
 ---
+
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
@@ -23,6 +28,47 @@ import './_style.css'
     <script is:inline set:html={themeScript} />
   </head>
   <body>
+    <svg
+      aria-hidden='true'
+      class='icon-sprite'
+    >
+      <symbol
+        id='sun'
+        fill='none'
+        stroke='currentColor'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        stroke-width='2'
+        viewBox='0 0 24 24'
+      >
+        <circle
+          cx='12'
+          cy='12'
+          r='4'
+        />
+        <path d='M12 2v2' />
+        <path d='M12 20v2' />
+        <path d='m4.93 4.93 1.41 1.41' />
+        <path d='m17.66 17.66 1.41 1.41' />
+        <path d='M2 12h2' />
+        <path d='M20 12h2' />
+        <path d='m6.34 17.66-1.41 1.41' />
+        <path d='m19.07 4.93-1.41 1.41' />
+      </symbol>
+      <symbol
+        id='moon'
+        fill='none'
+        stroke='currentColor'
+        stroke-linecap='round'
+        stroke-linejoin='round'
+        stroke-width='2'
+        viewBox='0 0 24 24'
+      >
+        <path
+          d='M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401'
+        />
+      </symbol>
+    </svg>
     <main>
       <h1>resonare/lite</h1>
       <h2>A state store for adding dark mode</h2>
@@ -33,7 +79,36 @@ import './_style.css'
       >
         Documentation <span aria-hidden='true'>→</span>
       </a>
-      <ThemeSelect client:load />
+      <div class='frameworks'>
+        <section
+          class='framework'
+          id='react'
+        >
+          <h3>React</h3>
+          <ReactThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='solid'
+        >
+          <h3>Solid</h3>
+          <SolidThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='svelte'
+        >
+          <h3>Svelte</h3>
+          <SvelteThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='vue'
+        >
+          <h3>Vue</h3>
+          <VueThemeSelect client:load />
+        </section>
+      </div>
     </main>
   </body>
 </html>

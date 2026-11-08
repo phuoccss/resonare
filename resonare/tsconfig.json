@@ -1,33 +1,12 @@
 {
-	"compilerOptions": {
-		"allowJs": true,
-		"lib": ["ES2023", "DOM", "DOM.Iterable"],
-		"checkJs": true,
-		"esModuleInterop": true,
-		"exactOptionalPropertyTypes": true,
-		"forceConsistentCasingInFileNames": true,
-		"isolatedModules": true,
-		"module": "ESNext",
-		"moduleDetection": "force",
-		"moduleResolution": "Bundler",
-		"noFallthroughCasesInSwitch": true,
-		"noImplicitOverride": true,
-		"noPropertyAccessFromIndexSignature": true,
-		"noUncheckedIndexedAccess": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"outDir": "dist",
-		"paths": {
-			"*": ["./*"]
-		},
-		"preserveWatchOutput": true,
-		"resolveJsonModule": true,
-		"rootDir": "./",
-		"skipLibCheck": true,
-		"strict": true,
-		"target": "ES2023",
-		"types": ["vitest/jsdom"],
-		"verbatimModuleSyntax": true
-	},
-	"exclude": ["node_modules", "dist"]
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "outDir": "dist",
+    "paths": {
+      "*": ["./*"]
+    }
+  },
+  "include": ["**/*", "**/*.json"],
+  "exclude": ["node_modules", "dist"]
 }

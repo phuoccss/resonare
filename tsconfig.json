@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "references": [
+    { "path": "tsconfig.root.json" },
+    { "path": "demo" },
+    { "path": "resonare" }
+  ]
+}

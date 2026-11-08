@@ -7,12 +7,54 @@ allowBuilds:
   sharp: false
   workerd: true
 
+catalog:
+  '@astrojs/cloudflare': 14.4.3
+  '@astrojs/react': 7.1.2
+  '@astrojs/solid-js': 7.1.2
+  '@astrojs/svelte': 9.1.2
+  '@astrojs/vue': 7.1.2
+  '@changesets/changelog-github': 1.0.1
+  '@changesets/cli': 3.0.3
+  '@commitlint/cli': 21.2.4
+  '@commitlint/config-conventional': 21.2.4
+  '@size-limit/preset-small-lib': 14.3.0
+  '@stylistic/eslint-plugin': 5.10.0
+  '@types/node': 26.6.6
+  '@types/react': 19.3.0
+  '@types/react-dom': 19.3.0
+  '@vitejs/plugin-react': 6.1.2
+  astro: 7.4.4
+  cross-env: 10.1.0
+  jsdom: 30.1.3
+  oxc-transform-react: 0.156.0
+  portless: 0.15.12
+  react: 19.3.1
+  react-dom: 19.3.1
+  size-limit: 14.3.0
+  solid-js: 1.9.18
+  svelte: 5.57.3
+  turbo: 2.11.10
+  typescript: 7.0.2
+  vite: npm:@voidzero-dev/vite-plus-core@1.4.0
+  vite-plus: 1.4.0
+  vue: 3.5.44
+  wrangler: 4.156.0
+
+catalogMode: strict
+cleanupUnusedCatalogs: true
+
+# autoDedupe: true
+blockExoticSubdeps: true
+savePrefix: ''
+# saveTypes: true
+update:
+  githubActions: true
+
 minimumReleaseAge: 10080 # 7 days
+minimumReleaseAgeExcludePrune: true
 minimumReleaseAgeIgnoreMissingTime: false
 minimumReleaseAgeStrict: true
 
-blockExoticSubdeps: true
-savePrefix: ''
-
 trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 43200 # 30 days
+trustPolicyExcludePrune: true

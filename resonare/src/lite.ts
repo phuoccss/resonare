@@ -1,9 +1,6 @@
 import { DEFAULT_LITE_KEY } from './constants'
-import {
-	localStorageAdapter,
-	type StorageAdapter,
-	type StorageAdapterCreate,
-} from './storage'
+import { toScriptFunction, toScriptJson } from './script'
+import { type StorageAdapterCreate, localStorageAdapter } from './storage'
 
 export * from './storage'
 
@@ -12,155 +9,245 @@ type Theme = 'system' | 'light' | 'dark'
 type ResolvedTheme = 'light' | 'dark'
 
 type Snapshot = {
-	theme: Theme
-	resolvedTheme: ResolvedTheme
-	systemTheme: ResolvedTheme
+  theme: Theme
+  resolvedTheme: ResolvedTheme
+  systemTheme: ResolvedTheme
 }
 
 type Listener = (value: Snapshot) => void
 
 type ThemeStoreOptions = {
-	persisted?: Theme
-	storage?: StorageAdapterCreate | null
+  persisted?: Theme
+  storage?: StorageAdapterCreate | null
 }
 
-class ThemeStore {
-	#theme: Theme
+/**
+ * Creates a store for a single light / dark / system preference. It saves
+ * changes through `storage` (`localStorage` under the key `'resonare/lite'` by
+ * default; `null` disables saving), follows `prefers-color-scheme` while the
+ * preference is `system`, and notifies subscribers.
+ *
+ * Read state with `getSnapshot()` or `subscribe`.
+ *
+ * @example
+ *   import { createThemeStore, localStorageAdapter } from 'resonare/lite'
+ *
+ *   const store = createThemeStore({
+ *     storage: localStorageAdapter({ key: 'my-app' }),
+ *   })
+ *
+ *   // In the browser: load the saved choice and follow other tabs.
+ *   store.restore()
+ *   store.sync()
+ *
+ *   store.subscribe(({ resolvedTheme }) => {
+ *     document.documentElement.dataset.theme = resolvedTheme
+ *   })
+ *
+ *   store.setTheme('dark')
+ */
+export function createThemeStore({
+  persisted,
+  storage: createStorage = localStorageAdapter({ key: DEFAULT_LITE_KEY }),
+}: ThemeStoreOptions = {}) {
+  let theme: Theme = persisted ?? 'system'
 
-	#snapshot: Snapshot
+  let mediaQuery: MediaQueryList | undefined
 
-	#storage: StorageAdapter | null
+  const listeners = new Set<Listener>()
 
-	#mediaQuery: MediaQueryList | undefined
+  const abortController = new AbortController()
 
-	#listeners = new Set<Listener>()
+  const storage = createStorage?.({ abortController })
 
-	#abortController = new AbortController()
+  // No media support (e.g. on the server): `system` is `light`.
+  const resolveSystemTheme = (server?: boolean): ResolvedTheme => {
+    if (server || typeof matchMedia === 'undefined') {
+      return 'light'
+    }
 
-	constructor({
-		persisted,
-		storage = localStorageAdapter({ key: DEFAULT_LITE_KEY }),
-	}: ThemeStoreOptions = {}) {
-		this.#theme = persisted ?? 'system'
+    if (!mediaQuery) {
+      mediaQuery = matchMedia('(prefers-color-scheme: dark)')
 
-		this.#storage =
-			storage?.({
-				abortController: this.#abortController,
-			}) ?? null
+      mediaQuery.addEventListener(
+        'change',
+        () => {
+          setThemeAndNotify(theme)
+        },
+        abortController
+      )
+    }
 
-		this.#snapshot = this.#createSnapshot()
-	}
+    return mediaQuery.matches ? 'dark' : 'light'
+  }
 
-	getTheme = (): Theme => {
-		return this.#theme
-	}
+  const createSnapshot = (server?: boolean): Snapshot => {
+    const systemTheme = resolveSystemTheme(server)
 
-	getResolvedTheme = (): ResolvedTheme => {
-		return this.#theme === 'system' ? this.#resolveSystemTheme() : this.#theme
-	}
+    return {
+      theme,
+      resolvedTheme: theme === 'system' ? systemTheme : theme,
+      systemTheme,
+    }
+  }
 
-	getSystemTheme = (): ResolvedTheme => {
-		return this.#resolveSystemTheme()
-	}
+  const serverSnapshot = createSnapshot(true)
 
-	getSnapshot = (): Snapshot => {
-		return this.#snapshot
-	}
+  let snapshot = createSnapshot()
 
-	setTheme = (theme: Theme | ((current: Theme) => Theme)): void => {
-		this.#setThemeAndNotify(
-			typeof theme === 'function' ? theme(this.#theme) : theme,
-		)
+  const setThemeAndNotify = (next: Theme): void => {
+    theme = next
 
-		if (this.#storage) {
-			this.#storage.set(this.#theme)
-			this.#storage.broadcast?.(this.#theme)
-		}
-	}
+    snapshot = createSnapshot()
 
-	restore = (): void => {
-		this.#setThemeAndNotify((this.#storage?.get() ?? 'system') as Theme)
-	}
+    for (const listener of listeners) {
+      listener(snapshot)
+    }
+  }
 
-	subscribe = (callback: Listener): (() => void) => {
-		this.#listeners.add(callback)
+  return {
+    /**
+     * Current state:
+     *
+     * - `theme`: the selected preference (`'system'`, `'light'` or `'dark'`).
+     * - `resolvedTheme`: `'light'` or `'dark'`, with `system` resolved.
+     * - `systemTheme`: the OS preference, even when `system` isn't selected.
+     *
+     * Returns the same object until the next change.
+     */
+    getSnapshot: (): Snapshot => {
+      return snapshot
+    },
 
-		return () => {
-			this.#listeners.delete(callback)
-		}
-	}
+    /**
+     * The state as rendered on the server: `persisted` (or `system`), with the
+     * OS preference taken as `light`. It never changes, so hydration can match
+     * the server HTML even after `restore()`.
+     */
+    getServerSnapshot: (): Snapshot => {
+      return serverSnapshot
+    },
 
-	sync = (): (() => void) | undefined => {
-		if (!this.#storage?.watch) return
+    /**
+     * Sets the preference, saves it to storage, and notifies subscribers.
+     *
+     * @example
+     *   store.setTheme('dark')
+     *   store.setTheme((current) => (current === 'dark' ? 'light' : 'dark'))
+     */
+    setTheme: (next: Theme | ((current: Theme) => Theme)): void => {
+      setThemeAndNotify(typeof next === 'function' ? next(theme) : next)
 
-		return this.#storage.watch((theme) => {
-			this.#setThemeAndNotify((theme ?? 'system') as Theme)
-		})
-	}
+      storage?.set(theme)
 
-	destroy = (): void => {
-		this.#listeners.clear()
-		this.#abortController.abort()
-	}
+      storage?.broadcast?.(theme)
+    },
 
-	#createSnapshot = (): Snapshot => ({
-		theme: this.#theme,
-		resolvedTheme: this.getResolvedTheme(),
-		systemTheme: this.getSystemTheme(),
-	})
+    /**
+     * Loads the saved preference from storage. Does nothing when nothing is
+     * saved. Call it in the browser, e.g. after hydration.
+     */
+    restore: (): void => {
+      const stored = storage?.get() as Theme | null | undefined
 
-	#setThemeAndNotify = (theme: Theme): void => {
-		this.#theme = theme
-		this.#snapshot = this.#createSnapshot()
+      if (stored) {
+        setThemeAndNotify(stored)
+      }
+    },
 
-		for (const listener of this.#listeners) {
-			listener(this.#snapshot)
-		}
-	}
+    /**
+     * Calls `callback` with the new state (see `getSnapshot`) after every
+     * change, including OS preference changes. Returns an unsubscribe
+     * function.
+     */
+    subscribe: (callback: Listener): (() => void) => {
+      listeners.add(callback)
 
-	#resolveSystemTheme = (): ResolvedTheme => {
-		if (typeof matchMedia === 'undefined') return 'light'
+      return () => {
+        listeners.delete(callback)
+      }
+    },
 
-		if (!this.#mediaQuery) {
-			this.#mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    /**
+     * Applies changes saved by other tabs (if the storage adapter supports
+     * it); when another tab clears the saved value, resets to `system`.
+     * Returns a function that stops syncing, or `undefined` when the adapter
+     * can't sync.
+     */
+    sync: (): (() => void) | undefined => {
+      return storage?.watch?.((stored) => {
+        setThemeAndNotify((stored ?? 'system') as Theme)
+      })
+    },
 
-			this.#mediaQuery.addEventListener(
-				'change',
-				() => {
-					this.#setThemeAndNotify(this.#theme)
-				},
-				{ signal: this.#abortController.signal },
-			)
-		}
+    /**
+     * Removes all subscribers and stops listening to the OS preference and
+     * storage. The store doesn't update after this.
+     */
+    destroy: (): void => {
+      listeners.clear()
 
-		return this.#mediaQuery.matches ? 'dark' : 'light'
-	}
+      abortController.abort()
+    },
+  }
 }
 
-export type { ThemeStore }
-
-export function createThemeStore(options: ThemeStoreOptions = {}): ThemeStore {
-	return new ThemeStore(options)
-}
+export type ThemeStore = ReturnType<typeof createThemeStore>
 
 const restoreScript = (key: string, handler: Listener) => {
-	const theme = (localStorage.getItem(key) ?? 'system') as Theme
-	const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
-		? 'dark'
-		: 'light'
-	const resolvedTheme = theme === 'system' ? systemTheme : theme
+  let theme: Theme = 'system'
 
-	handler({ theme, resolvedTheme, systemTheme })
+  // Blocked storage must not stop the handler from running.
+  try {
+    theme = (localStorage.getItem(key) ?? theme) as Theme
+  } catch {}
+
+  const systemTheme = matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+
+  const resolvedTheme = theme === 'system' ? systemTheme : theme
+
+  handler({ theme, resolvedTheme, systemTheme })
 }
 
+/** Options for `createInlineThemeScript`. */
 export type ThemeScriptParameter = {
-	key?: string
-	handler: Listener
+  /** The store's `localStorage` key; defaults to `'resonare/lite'`. */
+  key?: string
+  /**
+   * Applies the state to the page; receives the same value as `subscribe`.
+   * It is copied into the script as source code, so it can't use variables
+   * from outside the function.
+   */
+  handler: Listener
 }
 
+/**
+ * Returns the source of a small script that reads the saved preference from
+ * `localStorage` and runs `handler` with it. Put it in an inline `<script>` in
+ * the `<head>` so the page has the right theme before first paint.
+ *
+ * Use the same handler with `store.subscribe` to keep the page updated after
+ * that.
+ *
+ * @example
+ *   import { createInlineThemeScript, createThemeStore } from 'resonare/lite'
+ *
+ *   const handler = ({ resolvedTheme }) => {
+ *     document.documentElement.dataset.theme = resolvedTheme
+ *   }
+ *
+ *   const themeScript = createInlineThemeScript({ key: 'my-app', handler })
+ *   // In <head>:
+ *   // <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+ *
+ *   const store = createThemeStore()
+ *   store.subscribe(handler)
+ */
 export function createInlineThemeScript({
-	key = DEFAULT_LITE_KEY,
-	handler,
+  key = DEFAULT_LITE_KEY,
+  handler,
 }: ThemeScriptParameter) {
-	return `(${restoreScript})('${key}',${handler})`
+  return `(${restoreScript})(${toScriptJson(key)},${toScriptFunction(handler)})`
 }

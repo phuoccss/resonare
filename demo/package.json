@@ -1,25 +1,33 @@
 {
-	"name": "demo",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "astro build",
-		"deploy": "wrangler deploy",
-		"dev": "portless demo.resonare astro dev"
-	},
-	"dependencies": {
-		"astro": "5.18.1",
-		"react": "19.2.8",
-		"react-dom": "19.2.8",
-		"resonare": "workspace:*"
-	},
-	"devDependencies": {
-		"@astrojs/cloudflare": "12.6.13",
-		"@astrojs/react": "4.4.2",
-		"@types/react": "19.2.18",
-		"@types/react-dom": "19.2.7",
-		"portless": "0.15.6",
-		"typescript": "7.0.2",
-		"wrangler": "4.129.0"
-	}
+  "name": "demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "deploy": "wrangler deploy",
+    "dev": "portless demo.resonare astro dev"
+  },
+  "dependencies": {
+    "astro": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "resonare": "workspace:*",
+    "solid-js": "catalog:",
+    "svelte": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@astrojs/cloudflare": "catalog:",
+    "@astrojs/react": "catalog:",
+    "@astrojs/solid-js": "catalog:",
+    "@astrojs/svelte": "catalog:",
+    "@astrojs/vue": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "portless": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "wrangler": "catalog:"
+  }
 }

@@ -1,13 +1,30 @@
 {
-	"name": "resonare-monorepo",
-	"private": true,
-	"devDependencies": {
-		"@biomejs/biome": "2.5.12",
-		"@changesets/changelog-github": "1.0.1",
-		"@changesets/cli": "3.0.2",
-		"@commitlint/cli": "21.2.2",
-		"@commitlint/config-conventional": "21.2.2",
-		"turbo": "2.10.12"
-	},
-	"packageManager": "pnpm@12.3.4"
+  "name": "resonare-monorepo",
+  "private": true,
+  "scripts": {
+    "format": "vp fmt --write --disable-nested-config",
+    "lint": "vp lint"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "catalog:",
+    "@changesets/cli": "catalog:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
+    "@stylistic/eslint-plugin": "catalog:",
+    "turbo": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.17.0",
+      "onFail": "download"
+    },
+    "runtime": {
+      "name": "node",
+      "version": "lts",
+      "onFail": "download"
+    }
+  }
 }

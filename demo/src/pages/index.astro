@@ -1,7 +1,12 @@
 ---
-import { ThemeSelect, themeScript } from './_lib'
+import { ThemeSelect as ReactThemeSelect } from '../integration/theme-select-react'
+import { ThemeSelect as SolidThemeSelect } from '../integration/theme-select-solid'
+import SvelteThemeSelect from '../integration/theme-select-svelte.svelte'
+import VueThemeSelect from '../integration/theme-select-vue.vue'
+import { themeScript } from '../integration/shared'
 import './_style.css'
 ---
+
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
@@ -33,7 +38,36 @@ import './_style.css'
       >
         Documentation <span aria-hidden='true'>→</span>
       </a>
-      <ThemeSelect client:load />
+      <div class='frameworks'>
+        <section
+          class='framework'
+          id='react'
+        >
+          <h3>React</h3>
+          <ReactThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='solid'
+        >
+          <h3>Solid</h3>
+          <SolidThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='svelte'
+        >
+          <h3>Svelte</h3>
+          <SvelteThemeSelect client:load />
+        </section>
+        <section
+          class='framework'
+          id='vue'
+        >
+          <h3>Vue</h3>
+          <VueThemeSelect client:load />
+        </section>
+      </div>
     </main>
   </body>
 </html>

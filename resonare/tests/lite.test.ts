@@ -1,129 +1,213 @@
-// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createThemeStore } from '../dist/lite'
+import { createInlineThemeScript, createThemeStore } from '../dist/lite'
 import { mockStorage, setSystemColorScheme } from './utils'
 
 const OPTIONS = {
-	storage: () => mockStorage,
+  storage: () => {
+    return mockStorage
+  },
 } as const
 
 describe('ThemeStore', () => {
-	beforeEach(() => {
-		vi.clearAllMocks()
+  beforeEach(() => {
+    vi.clearAllMocks()
 
-		setSystemColorScheme('light')
-	})
+    setSystemColorScheme('light')
+  })
 
-	afterEach(() => {
-		vi.restoreAllMocks()
-	})
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
 
-	it('should create a ThemeStore instance', () => {
-		const themeStore = createThemeStore(OPTIONS)
+  it('should create a ThemeStore instance', () => {
+    const themeStore = createThemeStore(OPTIONS)
 
-		expect(themeStore).toBeDefined()
-	})
+    expect(themeStore).toBeDefined()
+  })
 
-	it('should default to system and resolve against the OS', () => {
-		const themeStore = createThemeStore(OPTIONS)
+  it('should default to system and resolve against the OS', () => {
+    const themeStore = createThemeStore(OPTIONS)
 
-		expect(themeStore.getTheme()).toBe('system')
-		expect(themeStore.getResolvedTheme()).toBe('light')
-		expect(themeStore.getSystemTheme()).toBe('light')
-	})
+    expect(themeStore.getSnapshot().theme).toBe('system')
 
-	it('should set theme', () => {
-		const themeStore = createThemeStore(OPTIONS)
+    expect(themeStore.getSnapshot().resolvedTheme).toBe('light')
 
-		themeStore.setTheme('dark')
+    expect(themeStore.getSnapshot().systemTheme).toBe('light')
+  })
 
-		expect(themeStore.getTheme()).toBe('dark')
-		expect(themeStore.getResolvedTheme()).toBe('dark')
-		expect(mockStorage.set).toHaveBeenCalledWith('dark')
-		expect(mockStorage.broadcast).toHaveBeenCalledWith('dark')
+  it('should set theme', () => {
+    const themeStore = createThemeStore(OPTIONS)
 
-		themeStore.setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+    themeStore.setTheme('dark')
 
-		expect(themeStore.getTheme()).toBe('light')
-	})
+    expect(themeStore.getSnapshot().theme).toBe('dark')
 
-	it('should respond to OS preferences', () => {
-		setSystemColorScheme('dark')
+    expect(themeStore.getSnapshot().resolvedTheme).toBe('dark')
 
-		const themeStore = createThemeStore(OPTIONS)
+    expect(mockStorage.set).toHaveBeenCalledWith('dark')
 
-		expect(themeStore.getResolvedTheme()).toBe('dark')
-		expect(themeStore.getSystemTheme()).toBe('dark')
-	})
+    expect(mockStorage.broadcast).toHaveBeenCalledWith('dark')
 
-	it('should restore from persisted state', () => {
-		setSystemColorScheme('dark')
+    themeStore.setTheme((current) => {
+      return current === 'light' ? 'dark' : 'light'
+    })
 
-		const themeStore = createThemeStore({
-			...OPTIONS,
-			persisted: 'light',
-		})
+    expect(themeStore.getSnapshot().theme).toBe('light')
+  })
 
-		expect(themeStore.getTheme()).toBe('light')
-		expect(themeStore.getResolvedTheme()).toBe('light')
-		expect(themeStore.getSystemTheme()).toBe('dark')
-	})
+  it('should respond to OS preferences', () => {
+    setSystemColorScheme('dark')
 
-	it('should restore from storage', () => {
-		setSystemColorScheme('dark')
+    const themeStore = createThemeStore(OPTIONS)
 
-		mockStorage.get.mockReturnValue('light')
+    expect(themeStore.getSnapshot().resolvedTheme).toBe('dark')
 
-		const themeStore = createThemeStore(OPTIONS)
+    expect(themeStore.getSnapshot().systemTheme).toBe('dark')
+  })
 
-		themeStore.restore()
+  it('should restore from persisted state', () => {
+    setSystemColorScheme('dark')
 
-		expect(themeStore.getTheme()).toBe('light')
-		expect(themeStore.getResolvedTheme()).toBe('light')
-	})
+    const themeStore = createThemeStore({
+      ...OPTIONS,
+      persisted: 'light',
+    })
 
-	it('should do nothing when restoring from empty storage', () => {
-		mockStorage.get.mockReturnValue(null)
+    expect(themeStore.getSnapshot().theme).toBe('light')
 
-		const themeStore = createThemeStore(OPTIONS)
+    expect(themeStore.getSnapshot().resolvedTheme).toBe('light')
 
-		themeStore.setTheme('light')
+    expect(themeStore.getSnapshot().systemTheme).toBe('dark')
+  })
 
-		themeStore.restore()
+  it('should restore from storage', () => {
+    setSystemColorScheme('dark')
 
-		expect(themeStore.getTheme()).toBe('light')
-	})
+    mockStorage.get.mockReturnValue('light')
 
-	it('should subscribe and unsubscribe to theme changes', () => {
-		const themeStore = createThemeStore(OPTIONS)
+    const themeStore = createThemeStore(OPTIONS)
 
-		const mockListener = vi.fn()
+    themeStore.restore()
 
-		const unsubscribe = themeStore.subscribe(mockListener)
+    expect(themeStore.getSnapshot().theme).toBe('light')
 
-		themeStore.setTheme('dark')
+    expect(themeStore.getSnapshot().resolvedTheme).toBe('light')
+  })
 
-		unsubscribe()
+  it('should do nothing when restoring from empty storage', () => {
+    mockStorage.get.mockReturnValue(null)
 
-		themeStore.setTheme('light')
+    const themeStore = createThemeStore(OPTIONS)
 
-		expect(mockListener).toHaveBeenNthCalledWith(1, {
-			theme: 'dark',
-			resolvedTheme: 'dark',
-			systemTheme: 'light',
-		})
+    themeStore.setTheme('light')
 
-		expect(mockListener).toHaveBeenCalledTimes(1)
-	})
+    themeStore.restore()
 
-	it('should resolve the system theme even when it is not selected', () => {
-		setSystemColorScheme('dark')
+    expect(themeStore.getSnapshot().theme).toBe('light')
+  })
 
-		const themeStore = createThemeStore(OPTIONS)
+  it('should keep a fixed server snapshot that ignores media and storage', () => {
+    setSystemColorScheme('dark')
 
-		themeStore.setTheme('light')
+    mockStorage.get.mockReturnValue('dark')
 
-		expect(themeStore.getSystemTheme()).toBe('dark')
-	})
+    const themeStore = createThemeStore(OPTIONS)
+
+    const serverSnapshot = themeStore.getServerSnapshot()
+
+    expect(serverSnapshot).toEqual({
+      theme: 'system',
+      resolvedTheme: 'light',
+      systemTheme: 'light',
+    })
+
+    themeStore.restore()
+
+    themeStore.setTheme('light')
+
+    expect(themeStore.getServerSnapshot()).toBe(serverSnapshot)
+  })
+
+  it('should subscribe and unsubscribe to theme changes', () => {
+    const themeStore = createThemeStore(OPTIONS)
+
+    const mockListener = vi.fn()
+
+    const unsubscribe = themeStore.subscribe(mockListener)
+
+    themeStore.setTheme('dark')
+
+    unsubscribe()
+
+    themeStore.setTheme('light')
+
+    expect(mockListener).toHaveBeenNthCalledWith(1, {
+      theme: 'dark',
+      resolvedTheme: 'dark',
+      systemTheme: 'light',
+    })
+
+    expect(mockListener).toHaveBeenCalledTimes(1)
+  })
+
+  it('should resolve the system theme even when it is not selected', () => {
+    setSystemColorScheme('dark')
+
+    const themeStore = createThemeStore(OPTIONS)
+
+    themeStore.setTheme('light')
+
+    expect(themeStore.getSnapshot().systemTheme).toBe('dark')
+  })
+})
+
+describe('createInlineThemeScript', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should fall back to system when storage is blocked', () => {
+    setSystemColorScheme('dark')
+
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('The operation is insecure.', 'SecurityError')
+    })
+
+    new Function(
+      createInlineThemeScript({
+        key: 'test',
+        handler: (value) => {
+          ;(globalThis as any).__inlineThemeResult = value
+        },
+      })
+    )()
+
+    expect((globalThis as any).__inlineThemeResult).toEqual({
+      theme: 'system',
+      resolvedTheme: 'dark',
+      systemTheme: 'dark',
+    })
+  })
+
+  it('should escape the key and accept a method shorthand handler', () => {
+    const key = "it's</script>"
+
+    localStorage.setItem(key, 'dark')
+
+    const inlineScript = createInlineThemeScript({
+      key,
+      handler(value) {
+        ;(globalThis as any).__inlineThemeResult = value
+      },
+    })
+
+    expect(inlineScript).not.toContain('</script>')
+
+    new Function(inlineScript)()
+
+    expect((globalThis as any).__inlineThemeResult.theme).toBe('dark')
+
+    localStorage.clear()
+  })
 })

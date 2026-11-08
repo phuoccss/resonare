@@ -1,16 +1,16 @@
 {
-	"$schema": "https://turborepo.org/schema.json",
-	"tasks": {
-		"build": {
-			"dependsOn": ["^build"],
-			"outputs": ["dist/**"]
-		},
-		"deploy": {
-			"env": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
-			"dependsOn": ["build"]
-		},
-		"dev": {
-			"cache": false
-		}
-	}
+  "$schema": "https://turborepo.org/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "deploy": {
+      "env": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"],
+      "dependsOn": ["build"]
+    },
+    "dev": {
+      "cache": false
+    }
+  }
 }

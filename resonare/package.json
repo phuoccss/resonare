@@ -1,77 +1,113 @@
 {
-	"name": "resonare",
-	"version": "0.2.0",
-	"description": "Resonare",
-	"keywords": [
-		"theming",
-		"dark mode",
-		"user preferences"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/phuoccss/resonare.git",
-		"directory": "resonare"
-	},
-	"license": "MIT",
-	"author": "Si Phuoc <phuoc317049@gmail.com>",
-	"sideEffects": false,
-	"type": "module",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js"
-		},
-		"./react": {
-			"types": "./dist/react.d.ts",
-			"import": "./dist/react.js"
-		},
-		"./lite": {
-			"types": "./dist/lite.d.ts",
-			"import": "./dist/lite.js"
-		},
-		"./lite/react": {
-			"types": "./dist/lite-react.d.ts",
-			"import": "./dist/lite-react.js"
-		}
-	},
-	"types": "./dist/index.d.ts",
-	"files": [
-		"dist"
-	],
-	"scripts": {
-		"build": "tsdown",
-		"dev": "tsdown --watch",
-		"size": "pnpm build && size-limit",
-		"test": "vitest"
-	},
-	"dependencies": {
-		"react-compiler-runtime": "1.0.0"
-	},
-	"devDependencies": {
-		"@size-limit/preset-small-lib": "13.0.3",
-		"@types/node": "26.4.0",
-		"@types/react": "19.2.18",
-		"@vitejs/plugin-react": "6.1.1",
-		"cross-env": "10.1.0",
-		"jsdom": "30.0.1",
-		"oxc-transform-react": "0.148.0",
-		"react": "19.2.8",
-		"react-dom": "19.2.8",
-		"size-limit": "13.0.3",
-		"tsdown": "0.23.0",
-		"typescript": "7.0.2",
-		"vite": "8.2.2",
-		"vitest": "5.0.0"
-	},
-	"peerDependencies": {
-		"react": "^18.0.0 || ^19.0.0"
-	},
-	"peerDependenciesMeta": {
-		"react": {
-			"optional": true
-		}
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "resonare",
+  "version": "0.3.0",
+  "description": "Resonare",
+  "keywords": [
+    "dark mode",
+    "theming",
+    "user preferences"
+  ],
+  "license": "MIT",
+  "author": "Si Phuoc <phuoc317049@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phuoccss/resonare.git",
+    "directory": "resonare"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./solid": {
+      "types": "./dist/solid.d.ts",
+      "import": "./dist/solid.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte.d.ts",
+      "import": "./dist/svelte.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js"
+    },
+    "./lite": {
+      "types": "./dist/lite.d.ts",
+      "import": "./dist/lite.js"
+    },
+    "./lite/react": {
+      "types": "./dist/lite-react.d.ts",
+      "import": "./dist/lite-react.js"
+    },
+    "./lite/solid": {
+      "types": "./dist/lite-solid.d.ts",
+      "import": "./dist/lite-solid.js"
+    },
+    "./lite/svelte": {
+      "types": "./dist/lite-svelte.d.ts",
+      "import": "./dist/lite-svelte.js"
+    },
+    "./lite/vue": {
+      "types": "./dist/lite-vue.d.ts",
+      "import": "./dist/lite-vue.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "size": "pnpm build && size-limit",
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "cross-env": "catalog:",
+    "jsdom": "catalog:",
+    "oxc-transform-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "size-limit": "catalog:",
+    "solid-js": "catalog:",
+    "svelte": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vue": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "solid-js": "^1.6.0",
+    "svelte": "^5.7.0",
+    "vue": "^3.2.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "solid-js": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  }
 }
