@@ -2,12 +2,9 @@ name: CI
 
 on:
   pull_request:
-  # Called by the publish workflow, so pushes to main are checked before
-  # anything is published.
   workflow_call:
 
 concurrency:
-  # Prefixed so it never shares a group with the calling publish workflow.
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -31,7 +28,6 @@ jobs:
         shell: bash
         run: pnpm i --frozen-lockfile --ignore-scripts
 
-      # Tests and the demo's type check import the built package.
       - name: Build
         run: pnpm turbo build
 
