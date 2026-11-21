@@ -26,7 +26,7 @@ pnpm exec vp check             # format + lint + type check, repo-wide (what CI 
 pnpm format                    # write formatting
 pnpm --filter resonare size    # size-limit for dist/index.js and dist/lite.js
 pnpm turbo build               # package + demo
-pnpm --filter demo test:e2e    # Playwright on the built demo (first run: playwright install chromium)
+pnpm --filter demo test:e2e    # Playwright on the built demo in Chromium, Firefox and WebKit (first run: playwright install)
 ```
 
 A pre-commit hook (`.vite-hooks/pre-commit`, installed by `prepare`) runs `vp check --fix` on staged files. CI (`.github/workflows/ci.yml`) runs build, `vp check` and unit tests (Check job), plus the Playwright tests (E2E job), on pull requests and before every publish. The E2E tests in `demo/e2e/` cover first paint with app scripts blocked, hydration warnings, every framework's controls and cross-tab sync. Behavior changes that show in the browser should get a test there.
