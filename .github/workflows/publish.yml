@@ -13,7 +13,12 @@ permissions:
   pull-requests: write
 
 jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
   publish:
+    needs: ci
     if: ${{ github.repository_owner == 'phuoccss' }}
     name: Publish
     runs-on: ubuntu-latest
