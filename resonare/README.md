@@ -164,19 +164,20 @@ Complete, tested setups for [Next.js](https://github.com/phuoccss/resonare/blob/
 
 `key` is the setting that holds the color scheme and defaults to `'colorScheme'`. Put any theme-color tags before the inline script, so it finds them on first paint.
 
-Pass your config's type to check setting names and values, e.g. a typo in a value, a stale option after a rename, or a value with no theme color:
+Pass your config's type to `combine` to check the setting names and values of every effect inside it, e.g. a typo in a value, a stale option after a rename, or a value with no theme color:
 
 ```ts
-type Config = typeof CONFIG
-
-setClassNames<Config>({ colorScheme: { dark: 'dark' } })
-setColorScheme<Config>({
-  key: 'colorScheme',
-  values: { 'dark-dimmed': 'dark' },
-})
-setThemeColor<Config>({ values: { light: '#fff', dark: '#000' } }) // every value needs a color
-disableTransitions<Config>({ keys: ['colorScheme', 'contrast'] })
+const applyThemes = combine<typeof CONFIG>(
+  setClassNames({ colorScheme: { dark: 'dark' } }),
+  setColorScheme({ values: { 'dark-dimmed': 'dark' } }),
+  setThemeColor({
+    values: { light: '#fff', dark: '#000', 'dark-dimmed': '#111' },
+  }), // every value needs a color
+  disableTransitions({ keys: ['colorScheme', 'contrast'] })
+)
 ```
+
+An effect used on its own takes the type directly, e.g. `store.subscribe(setThemeColor<typeof CONFIG>({ … }))`. Effects with no config type fit anywhere.
 
 ### Your own effects
 

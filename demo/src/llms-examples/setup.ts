@@ -26,13 +26,12 @@ export const CONFIG = {
   sidebarWidth: { defaultValue: 240 },
 } as const satisfies ThemeStoreConfig
 
-type Config = typeof CONFIG
-
-export const applyThemes = combine(
+// The config type checks the setting names and values of every effect.
+export const applyThemes = combine<typeof CONFIG>(
   setDataAttributes(),
-  setColorScheme<Config>(),
-  setThemeColor<Config>({ values: { light: '#fff', dark: '#000' } }),
-  disableTransitions<Config>()
+  setColorScheme(),
+  setThemeColor({ values: { light: '#fff', dark: '#000' } }),
+  disableTransitions()
 )
 
 // Render in <head>, e.g. <script dangerouslySetInnerHTML={{ __html: themeScript }} />

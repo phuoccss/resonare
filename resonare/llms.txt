@@ -45,13 +45,12 @@ export const CONFIG = {
   sidebarWidth: { defaultValue: 240 },
 } as const satisfies ThemeStoreConfig
 
-type Config = typeof CONFIG
-
-export const applyThemes = combine(
+// The config type checks the setting names and values of every effect.
+export const applyThemes = combine<typeof CONFIG>(
   setDataAttributes(),
-  setColorScheme<Config>(),
-  setThemeColor<Config>({ values: { light: '#fff', dark: '#000' } }),
-  disableTransitions<Config>()
+  setColorScheme(),
+  setThemeColor({ values: { light: '#fff', dark: '#000' } }),
+  disableTransitions()
 )
 
 // Render in <head>, e.g. <script dangerouslySetInnerHTML={{ __html: themeScript }} />
@@ -129,7 +128,7 @@ Complete, tested light / dark / system setups per framework with `resonare/lite`
   - `getThemesAndOptions(config)`, `getDefaultThemes(config)`.
   - `localStorageAdapter({ key, type? })`, `memoryStorageAdapter({ key })`.
   - README: "API", "Storage".
-- `resonare/effects`: each effect works with `store.subscribe` and as a `handler`. Pass `<typeof CONFIG>` to type-check setting names and values. README: "Effects".
+- `resonare/effects`: each effect works with `store.subscribe` and as a `handler`. Pass the config type once to `combine<typeof CONFIG>(…)` to type-check the setting names and values of every effect inside (or to an effect used alone). README: "Effects".
   - `setDataAttributes()`
   - `setClassNames({ colorScheme: { dark: 'dark' } })`
   - `setColorScheme({ key?, values? })`

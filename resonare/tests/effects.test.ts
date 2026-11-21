@@ -564,4 +564,70 @@ describe('types', () => {
     // Without a config type, anything goes.
     setThemeColor({ key: 'whatever', values: { a: '#fff' } })
   })
+
+  it('should check every effect inside combine<Config>', () => {
+    type C = typeof CONFIG
+
+    combine<C>(
+      setDataAttributes(),
+      setClassNames({ colorScheme: { dark: 'dark', 'dark-dimmed': 'dark' } }),
+      setColorScheme({ values: { 'dark-dimmed': 'dark' } }),
+      setThemeColor({
+        values: { light: '#fff', dark: '#000', 'dark-dimmed': '#111' },
+      }),
+      disableTransitions({ keys: ['colorScheme', 'contrast'] })
+    )
+
+    combine<C>(
+      // @ts-expect-error: `drak` isn't a colorScheme value
+      setClassNames({ colorScheme: { drak: 'dark' } })
+    )
+
+    combine<C>(
+      // @ts-expect-error: every value needs a color
+      setThemeColor({ values: { light: '#fff', dark: '#000' } })
+    )
+
+    combine<C>(
+      // @ts-expect-error: unknown setting
+      disableTransitions({ keys: ['mode'] })
+    )
+  })
+
+  it('should mix typed, untyped and plain listeners', () => {
+    type C = typeof CONFIG
+
+    const MODE = {
+      mode: { options: ['light', 'dark'] },
+    } as const satisfies ThemeStoreConfig
+
+    // Untyped and typed effects together, without a type argument.
+    const mixed = combine(
+      setDataAttributes(),
+      setColorScheme<C>(),
+      setThemeColor<C>({
+        values: { light: '#fff', dark: '#000', 'dark-dimmed': '#111' },
+      })
+    )
+
+    // A plain listener inside a typed combine.
+    combine<C>(setDataAttributes(), (state) => {
+      void state
+    })
+
+    // An effect typed for another config doesn't fit.
+    combine<C>(
+      // @ts-expect-error: checked against a different config
+      setColorScheme<typeof MODE>({ key: 'mode' })
+    )
+
+    // Typed effects still work everywhere a listener does.
+    const store = createThemeStore(CONFIG, { storage: null })
+
+    store.subscribe(mixed)
+
+    store.subscribe(setThemeColor<C>({ cssVar: '--bg' }))
+
+    createInlineThemeScript({ config: CONFIG, handler: mixed })
+  })
 })

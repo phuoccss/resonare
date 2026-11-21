@@ -1,7 +1,7 @@
 import {
   type ClassMap,
-  type Effect,
-  combine,
+  type Effect as CoreEffect,
+  combine as coreCombine,
   createEffect,
   defineEffect as defineCoreEffect,
   runClassNames,
@@ -16,7 +16,40 @@ import type {
   ThemeStoreConfig,
 } from './index'
 
-export { type Effect, combine }
+/** Type-only key; nothing is stored under it at runtime. */
+declare const checkedConfig: unique symbol
+
+/**
+ * A listener that works with `store.subscribe` and as the inline script's
+ * `handler`, for a store whose config is `T`. `T` only exists for type
+ * checking: it lets `combine<Config>(…)` check every effect inside it. An
+ * effect with the default config fits any `combine`.
+ */
+export type Effect<T extends ThemeStoreConfig = ThemeStoreConfig> =
+  CoreEffect & {
+    // A method, so its parameter is checked both ways: effects for the
+    // default config and for a specific one fit together, while effects for
+    // two unrelated configs don't.
+    [checkedConfig]?(config: T): void
+  }
+
+/**
+ * Runs several listeners in order as one. The result works with
+ * `store.subscribe` and as the inline script's `handler`, as long as every
+ * part does (effects, or plain self-contained functions). Pass the config
+ * type once to check the setting names and values of every effect inside.
+ *
+ * @example
+ *   const applyThemes = combine<typeof CONFIG>(
+ *     setClassNames({ colorScheme: { dark: 'dark' } }),
+ *     setThemeColor({ values: { light: '#fff', dark: '#000' } })
+ *   )
+ */
+export const combine = coreCombine as <
+  T extends ThemeStoreConfig = ThemeStoreConfig,
+>(
+  ...effects: Array<Effect<T>>
+) => Effect<T>
 
 /** Any store's state; effects don't depend on a particular config. */
 type AnySnapshot = { resolvedThemes: Record<string, unknown> }
@@ -128,13 +161,13 @@ export const defineEffect = defineCoreEffect as <
     prev: ThemeSnapshot<T> | undefined,
     options: O
   ) => void
-) => (options?: O) => Effect
+) => (options?: O) => Effect<T>
 
 /**
  * Writes every resolved setting to a `data-*` attribute on `<html>`, e.g.
  * `data-color-scheme="dark"`.
  */
-export const setDataAttributes = (): Effect => {
+export const setDataAttributes = ((): CoreEffect => {
   return createEffect(
     (state: AnySnapshot): Record<string, unknown> => {
       return state.resolvedThemes
@@ -142,7 +175,7 @@ export const setDataAttributes = (): Effect => {
     runDataAttributes,
     {}
   )
-}
+}) as <T extends ThemeStoreConfig = ThemeStoreConfig>() => Effect<T>
 
 /**
  * Adds a class on `<html>` for each mapped setting, chosen by its resolved
@@ -158,7 +191,7 @@ export const setDataAttributes = (): Effect => {
  *     contrast: { high: 'high-contrast' },
  *   })
  */
-export const setClassNames = ((classes: ClassMap): Effect => {
+export const setClassNames = ((classes: ClassMap): CoreEffect => {
   return createEffect(
     (state: AnySnapshot): Record<string, unknown> => {
       return state.resolvedThemes
@@ -167,8 +200,8 @@ export const setClassNames = ((classes: ClassMap): Effect => {
     classes
   )
 }) as <T extends ThemeStoreConfig = ThemeStoreConfig>(
-  classes: ClassNamesOptions<T>
-) => Effect
+  classes: NoInfer<ClassNamesOptions<T>>
+) => Effect<T>
 
 /**
  * Sets the CSS `color-scheme` of `<html>`, so scrollbars, form controls and
@@ -178,11 +211,11 @@ export const setClassNames = ((classes: ClassMap): Effect => {
  */
 export const setColorScheme = ((
   options: { key?: string; values?: Record<string, string> } = {}
-): Effect => {
+): CoreEffect => {
   return createEffect(selectKey, runColorScheme, options)
 }) as <T extends ThemeStoreConfig = ThemeStoreConfig>(
-  ...args: OptionalArgs<T, ColorSchemeOptions<T>>
-) => Effect
+  ...args: OptionalArgs<T, NoInfer<ColorSchemeOptions<T>>>
+) => Effect<T>
 
 /**
  * Keeps `<meta name="theme-color">` in sync with `key` (default
@@ -196,11 +229,11 @@ export const setThemeColor = ((options: {
   key?: string
   values?: Record<string, string>
   cssVar?: string
-}): Effect => {
+}): CoreEffect => {
   return createEffect(selectKey, runThemeColor, options)
 }) as <T extends ThemeStoreConfig = ThemeStoreConfig>(
-  options: ThemeColorOptions<T>
-) => Effect
+  options: NoInfer<ThemeColorOptions<T>>
+) => Effect<T>
 
 /**
  * Turns off CSS transitions for one frame when any of `keys` (default
@@ -210,7 +243,7 @@ export const setThemeColor = ((options: {
  */
 export const disableTransitions = ((
   options: { keys?: Array<string> } = {}
-): Effect => {
+): CoreEffect => {
   return createEffect(
     (state: AnySnapshot, { keys }: { keys: Array<string> }): string => {
       return JSON.stringify(
@@ -224,5 +257,5 @@ export const disableTransitions = ((
     true
   )
 }) as <T extends ThemeStoreConfig = ThemeStoreConfig>(
-  ...args: OptionalArgs<T, Partial<TransitionsOptions<T>>>
-) => Effect
+  ...args: OptionalArgs<T, NoInfer<Partial<TransitionsOptions<T>>>>
+) => Effect<T>
