@@ -10,6 +10,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   id-token: write
   contents: write
+  pull-requests: write
 
 jobs:
   publish:
@@ -57,6 +58,8 @@ jobs:
           pr-title: 'chore(release): version packages'
           version-script: pnpm changeset version && pnpm i --lockfile-only
           publish-script: pnpm changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish dev version
         if: steps.changesets.outputs.published != 'true'
