@@ -67,9 +67,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish dev version
-        if: steps.changesets.outputs.published != 'true'
+        if: steps.changesets.outputs.hasChangesets == 'true' && steps.changesets.outputs.published != 'true'
         run: |
-          git checkout main
+          git checkout --force main
+          git clean -fd
           pnpm changeset version --snapshot dev
           pnpm changeset publish --tag dev
         env:
