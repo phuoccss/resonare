@@ -61,8 +61,8 @@ jobs:
       - name: Build package
         run: pnpm --filter resonare build
 
-      - name: Install Chromium
-        run: pnpm --filter demo exec playwright install --with-deps chromium
+      - name: Install browsers
+        run: pnpm --filter demo exec playwright install --with-deps chromium firefox webkit
 
       - name: Test
         run: pnpm --filter demo test:e2e
