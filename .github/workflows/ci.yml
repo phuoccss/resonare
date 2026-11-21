@@ -37,6 +37,9 @@ jobs:
       - name: Test
         run: pnpm --filter resonare test
 
+      - name: Size
+        run: pnpm --filter resonare exec size-limit
+
   e2e:
     name: E2E
     runs-on: ubuntu-latest
