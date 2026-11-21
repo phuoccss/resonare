@@ -17,6 +17,7 @@ catalog:
   '@changesets/cli': 3.0.3
   '@commitlint/cli': 21.2.4
   '@commitlint/config-conventional': 21.2.4
+  '@playwright/test': 1.65.1
   '@size-limit/preset-small-lib': 14.3.0
   '@stylistic/eslint-plugin': 5.10.0
   '@types/node': 26.6.6
