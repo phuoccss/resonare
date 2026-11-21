@@ -442,7 +442,7 @@ describe('ThemeStore', () => {
       'light-modern',
     ])
 
-    const onRemoteUpdate = mockStorage.watch.mock.calls[0][0]
+    const onRemoteUpdate = mockStorage.watch.mock.calls[0]![0]
 
     onRemoteUpdate(null)
 
@@ -462,7 +462,7 @@ describe('ThemeStore', () => {
 
     themeStore.sync()
 
-    const onRemoteUpdate = mockStorage.watch.mock.calls[0][0]
+    const onRemoteUpdate = mockStorage.watch.mock.calls[0]![0]
 
     expect(() => {
       onRemoteUpdate('{oops')
@@ -486,11 +486,27 @@ describe('ThemeStore', () => {
 
     themeStore.setThemes({ contrast: 'standard' })
 
-    expect(mockListener).toHaveBeenNthCalledWith(1, {
-      themes: { colorScheme: 'system', contrast: 'high', sidebar: 200 },
-      resolvedThemes: { colorScheme: 'light', contrast: 'high', sidebar: 200 },
-      resolvedSystemThemes: { colorScheme: 'light' },
-    })
+    expect(mockListener).toHaveBeenNthCalledWith(
+      1,
+      {
+        themes: { colorScheme: 'system', contrast: 'high', sidebar: 200 },
+        resolvedThemes: {
+          colorScheme: 'light',
+          contrast: 'high',
+          sidebar: 200,
+        },
+        resolvedSystemThemes: { colorScheme: 'light' },
+      },
+      {
+        themes: { colorScheme: 'system', contrast: 'standard', sidebar: 200 },
+        resolvedThemes: {
+          colorScheme: 'light',
+          contrast: 'standard',
+          sidebar: 200,
+        },
+        resolvedSystemThemes: { colorScheme: 'light' },
+      }
+    )
 
     expect(mockListener).toHaveBeenCalledTimes(1)
   })
@@ -590,14 +606,14 @@ describe('createInlineThemeScript', () => {
     key: 'test',
     config: CONFIG,
     handler: (value) => {
-      ;(globalThis as any).__inlineThemeResult = value
+      globalThis.__inlineThemeResult = value
     },
   })
 
   beforeEach(() => {
     setSystemColorScheme('dark')
 
-    delete (globalThis as any).__inlineThemeResult
+    delete globalThis.__inlineThemeResult
   })
 
   afterEach(() => {
@@ -620,7 +636,10 @@ describe('createInlineThemeScript', () => {
 
     new Function(script)()
 
-    expect((globalThis as any).__inlineThemeResult.themes.contrast).toBe('high')
+    expect(
+      (globalThis.__inlineThemeResult as { themes: Record<string, unknown> })
+        .themes['contrast']
+    ).toBe('high')
   })
 
   it.each(['{oops', 'null'])(
@@ -630,7 +649,7 @@ describe('createInlineThemeScript', () => {
 
       new Function(script)()
 
-      expect((globalThis as any).__inlineThemeResult).toEqual(defaults)
+      expect(globalThis.__inlineThemeResult).toEqual(defaults)
     }
   )
 
@@ -641,7 +660,7 @@ describe('createInlineThemeScript', () => {
 
     new Function(script)()
 
-    expect((globalThis as any).__inlineThemeResult).toEqual(defaults)
+    expect(globalThis.__inlineThemeResult).toEqual(defaults)
   })
 
   it('should escape the key and config for an inline <script>', () => {
@@ -656,7 +675,7 @@ describe('createInlineThemeScript', () => {
         contrast: { options: ['standard', 'high', '</script>'] },
       },
       handler: (value) => {
-        ;(globalThis as any).__inlineThemeResult = value
+        globalThis.__inlineThemeResult = value
       },
     })
 
@@ -664,31 +683,34 @@ describe('createInlineThemeScript', () => {
 
     new Function(inlineScript)()
 
-    expect((globalThis as any).__inlineThemeResult.themes.contrast).toBe('high')
+    expect(
+      (globalThis.__inlineThemeResult as { themes: Record<string, unknown> })
+        .themes['contrast']
+    ).toBe('high')
   })
 
   it.each([
     {
       name: 'method shorthand',
       param: {
-        handler(value: any) {
-          ;(globalThis as any).__inlineThemeResult = value
+        handler(value: unknown) {
+          globalThis.__inlineThemeResult = value
         },
       },
     },
     {
       name: 'async method shorthand',
       param: {
-        async handler(value: any) {
-          ;(globalThis as any).__inlineThemeResult = value
+        async handler(value: unknown) {
+          globalThis.__inlineThemeResult = value
         },
       },
     },
     {
       name: 'function expression',
       param: {
-        handler: function (value: any) {
-          ;(globalThis as any).__inlineThemeResult = value
+        handler: function (value: unknown) {
+          globalThis.__inlineThemeResult = value
         },
       },
     },
@@ -696,7 +718,7 @@ describe('createInlineThemeScript', () => {
       name: 'parameterless arrow',
       param: {
         handler: () => {
-          ;(globalThis as any).__inlineThemeResult = 'called'
+          globalThis.__inlineThemeResult = 'called'
         },
       },
     },
@@ -705,6 +727,6 @@ describe('createInlineThemeScript', () => {
       createInlineThemeScript({ key: 'test', config: CONFIG, ...param })
     )()
 
-    expect((globalThis as any).__inlineThemeResult).toBeDefined()
+    expect(globalThis.__inlineThemeResult).toBeDefined()
   })
 })

@@ -142,11 +142,19 @@ describe('ThemeStore', () => {
 
     themeStore.setTheme('light')
 
-    expect(mockListener).toHaveBeenNthCalledWith(1, {
-      theme: 'dark',
-      resolvedTheme: 'dark',
-      systemTheme: 'light',
-    })
+    expect(mockListener).toHaveBeenNthCalledWith(
+      1,
+      {
+        theme: 'dark',
+        resolvedTheme: 'dark',
+        systemTheme: 'light',
+      },
+      {
+        theme: 'system',
+        resolvedTheme: 'light',
+        systemTheme: 'light',
+      }
+    )
 
     expect(mockListener).toHaveBeenCalledTimes(1)
   })
@@ -178,12 +186,12 @@ describe('createInlineThemeScript', () => {
       createInlineThemeScript({
         key: 'test',
         handler: (value) => {
-          ;(globalThis as any).__inlineThemeResult = value
+          globalThis.__inlineThemeResult = value
         },
       })
     )()
 
-    expect((globalThis as any).__inlineThemeResult).toEqual({
+    expect(globalThis.__inlineThemeResult).toEqual({
       theme: 'system',
       resolvedTheme: 'dark',
       systemTheme: 'dark',
@@ -198,7 +206,7 @@ describe('createInlineThemeScript', () => {
     const inlineScript = createInlineThemeScript({
       key,
       handler(value) {
-        ;(globalThis as any).__inlineThemeResult = value
+        globalThis.__inlineThemeResult = value
       },
     })
 
@@ -206,7 +214,9 @@ describe('createInlineThemeScript', () => {
 
     new Function(inlineScript)()
 
-    expect((globalThis as any).__inlineThemeResult.theme).toBe('dark')
+    expect((globalThis.__inlineThemeResult as { theme: string }).theme).toBe(
+      'dark'
+    )
 
     localStorage.clear()
   })

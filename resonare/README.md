@@ -13,6 +13,7 @@ A small state store for themes and user preferences: color scheme, contrast, spa
 - **Framework bindings** for React, Solid, Svelte and Vue, or use it with plain JavaScript
 - **Type-safe:** option values are inferred from your config
 - **Lite version** for when all you need is light / dark / system
+- **Ready-made effects** for `data-*` attributes, `color-scheme`, `<meta name="theme-color">` and switching without transition flashes
 
 ## Installation
 
@@ -34,7 +35,14 @@ Each key is a setting. List its `options`; the first one is the default unless y
 
 ```ts
 // theme.ts
-import { type ThemeScriptParameter, type ThemeStoreConfig } from 'resonare'
+import { type ThemeStoreConfig } from 'resonare'
+import {
+  combine,
+  disableTransitions,
+  setColorScheme,
+  setDataAttributes,
+  setThemeColor,
+} from 'resonare/effects'
 
 export const CONFIG = {
   colorScheme: {
@@ -52,23 +60,18 @@ export const CONFIG = {
   },
 } as const satisfies ThemeStoreConfig
 
-// Applies the settings to the page, e.g. as data-color-scheme="dark".
-// It is also copied into the inline script as source code, so it must not use
-// any variables from outside the function.
-export const applyThemes: ThemeScriptParameter['handler'] = ({
-  resolvedThemes,
-}) => {
-  for (const [key, value] of Object.entries(resolvedThemes)) {
-    document.documentElement.dataset[key] = String(value)
-  }
-}
+export const applyThemes = combine(
+  setDataAttributes(),
+  setColorScheme(),
+  setThemeColor({ values: { light: '#fff', dark: '#000' } }),
+  disableTransitions()
+)
 ```
 
 Then style your page from those attributes:
 
 ```css
 :root[data-color-scheme='dark'] {
-  color-scheme: dark;
   --background: #000;
 }
 ```
@@ -142,6 +145,65 @@ function ColorSchemeSelect() {
 
 See [Frameworks](#frameworks) for Solid, Svelte and Vue.
 
+## Effects
+
+`resonare/effects` (and `resonare/lite/effects`) has the side effects most apps need when the theme changes. Each one works both with `store.subscribe` and as the inline script's `handler`, so the page is right on first paint and stays right afterwards. Combine them into one handler with `combine(...)`; they run in order.
+
+| Effect                                                 | What it does                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setDataAttributes()`                                  | Writes every resolved setting to `<html>`, e.g. `data-color-scheme="dark"`                                                                                                                                                                                                             |
+| `setClassNames({ [setting]: { [value]: className } })` | Adds a class on `<html>` per mapped setting, chosen by its resolved value, e.g. `{ colorScheme: { dark: 'dark', 'dark-dimmed': 'dark' } }` for Tailwind's or shadcn's `.dark`. Unmapped values (or `null`) add no class, and every mapped class is removed once it no longer applies   |
+| `setColorScheme({ key?, values? })`                    | Sets the CSS `color-scheme` on `<html>`, so scrollbars and form controls match. Map custom values with `values: { 'dark-dimmed': 'dark' }`                                                                                                                                             |
+| `setThemeColor({ key?, values })`                      | Keeps `<meta name="theme-color">` in sync, so the browser's toolbar follows the user's choice instead of the OS. It sets the `content` of every theme-color tag, media-based ones included (Safari picks up content changes, not added or removed tags), and adds one if there is none |
+| `setThemeColor({ key?, cssVar })`                      | The same, reading the color from a CSS variable on `<html>`. List it after `setDataAttributes()`, and put the inline script after your stylesheet so the variable is there on first paint                                                                                              |
+| `disableTransitions({ keys? })`                        | Turns off CSS transitions for one frame when any of `keys` (default `['colorScheme']`) changes, so colors switch at once instead of animating. Does nothing on first paint or when other settings change                                                                               |
+
+`key` is the setting that holds the color scheme and defaults to `'colorScheme'`. Put any theme-color tags before the inline script, so it finds them on first paint.
+
+Pass your config's type to check setting names and values, e.g. a typo in a value, a stale option after a rename, or a value with no theme color:
+
+```ts
+type Config = typeof CONFIG
+
+setClassNames<Config>({ colorScheme: { dark: 'dark' } })
+setColorScheme<Config>({
+  key: 'colorScheme',
+  values: { 'dark-dimmed': 'dark' },
+})
+setThemeColor<Config>({ values: { light: '#fff', dark: '#000' } }) // every value needs a color
+disableTransitions<Config>({ keys: ['colorScheme', 'contrast'] })
+```
+
+### Your own effects
+
+A plain handler can't use variables from outside itself, because it is copied into the inline script as source code. `defineEffect` gets around that: it copies your function together with its options, which must be JSON-serializable.
+
+```ts
+import { combine, defineEffect, setDataAttributes } from 'resonare/effects'
+
+const favicon = defineEffect<typeof CONFIG, Record<string, string>>(
+  ({ resolvedThemes }, prev, icons) => {
+    document.querySelector<HTMLLinkElement>('link[rel=icon]')!.href =
+      icons[resolvedThemes.colorScheme]!
+  }
+)
+
+export const applyThemes = combine(
+  setDataAttributes(),
+  favicon({ light: '/icon-light.svg', dark: '/icon-dark.svg' })
+)
+```
+
+Every listener receives the state before the change as its second argument (`prev`). It is `undefined` in the inline script, which makes "only on a real change" logic easy.
+
+To animate the switch with a [view transition](https://developer.mozilla.org/docs/Web/API/View_Transition_API), wrap the setter: subscribers run synchronously, so the new theme is applied inside the callback.
+
+```ts
+document.startViewTransition(() => {
+  store.setThemes({ colorScheme: 'dark' })
+})
+```
+
 ## State
 
 Every listener, snapshot and binding gives you three views of the state:
@@ -173,7 +235,7 @@ const store = createThemeStore(CONFIG, {
 | `getServerSnapshot()`                                    | The state as rendered on the server (see [Server-side rendering](#server-side-rendering))                                     |
 | `setThemes(partial)`                                     | Updates the given settings, saves them and notifies subscribers. Also accepts a function: `setThemes((current) => ({ ... }))` |
 | `updateSystemOption(key, [whenMatched, whenNotMatched])` | Changes what a media option resolves to, e.g. `updateSystemOption('colorScheme', ['dark-dimmed', 'light'])`                   |
-| `subscribe(callback)`                                    | Calls `callback` with the new state after every change, including OS preference changes. Returns an unsubscribe function      |
+| `subscribe(callback)`                                    | Calls `callback(state, prev)` after every change, including OS preference changes. Returns an unsubscribe function            |
 | `restore()`                                              | Loads the saved state from storage. Does nothing when nothing is saved                                                        |
 | `sync()`                                                 | Applies changes made in other tabs. Returns a function that stops syncing                                                     |
 | `toPersist()`                                            | The state to save elsewhere; pass it back as `persisted`                                                                      |
@@ -378,15 +440,22 @@ export function ThemeSelect({ savedState }) {
 For a single light / dark / system preference, `resonare/lite` is smaller and needs no config.
 
 ```ts
+import { createInlineThemeScript, createThemeStore } from 'resonare/lite'
 import {
-  type ThemeScriptParameter,
-  createInlineThemeScript,
-  createThemeStore,
-} from 'resonare/lite'
+  combine,
+  disableTransitions,
+  setColorScheme,
+  setDataAttributes,
+  setThemeColor,
+} from 'resonare/lite/effects'
 
-const applyTheme: ThemeScriptParameter['handler'] = ({ resolvedTheme }) => {
-  document.documentElement.dataset.theme = resolvedTheme
-}
+// data-theme="dark", plus the same effects as the full version.
+const applyTheme = combine(
+  setDataAttributes(),
+  setColorScheme(),
+  setThemeColor({ light: '#fff', dark: '#000' }),
+  disableTransitions()
+)
 
 // Put this in the <head>, as above.
 export const themeScript = createInlineThemeScript({ handler: applyTheme })
@@ -413,7 +482,7 @@ The state has three fields:
 
 The store has the same methods as the full one, except `setTheme` instead of `setThemes` and no `updateSystemOption` or `toPersist`. It saves to `localStorage` under the key `'resonare/lite'` by default, and the same `storage` and `persisted` options apply (`persisted` is just the theme, e.g. `'dark'`).
 
-The bindings live under `resonare/lite/react`, `resonare/lite/solid`, `resonare/lite/svelte` and `resonare/lite/vue`, and work like the full ones.
+The bindings live under `resonare/lite/react`, `resonare/lite/solid`, `resonare/lite/svelte` and `resonare/lite/vue`, and the effects under `resonare/lite/effects`. They work like the full ones, except that `setDataAttributes({ key })` names the attribute (`data-theme` by default), `setClassNames({ light?, dark? })` adds `light` or `dark` (rename them, or pass `null` for no class; `undefined` keeps the default), `setThemeColor` takes `{ light, dark }` or `{ cssVar }`, and there's no `key`, `keys` or config type elsewhere.
 
 ## Changing options later
 

@@ -41,6 +41,10 @@
       "types": "./dist/vue.d.ts",
       "import": "./dist/vue.js"
     },
+    "./effects": {
+      "types": "./dist/effects.d.ts",
+      "import": "./dist/effects.js"
+    },
     "./lite": {
       "types": "./dist/lite.d.ts",
       "import": "./dist/lite.js"
@@ -60,6 +64,10 @@
     "./lite/vue": {
       "types": "./dist/lite-vue.d.ts",
       "import": "./dist/lite-vue.js"
+    },
+    "./lite/effects": {
+      "types": "./dist/lite-effects.d.ts",
+      "import": "./dist/lite-effects.js"
     }
   },
   "publishConfig": {
