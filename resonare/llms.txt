@@ -1,0 +1,132 @@
+# resonare
+
+> A small state store for themes and user preferences (color scheme, contrast, sidebar width, …) with no flash on page load, storage and cross-tab sync, SSR without hydration mismatches, React/Solid/Svelte/Vue bindings, and ready-made DOM effects. `resonare/lite` is a smaller variant for a single light / dark / system preference.
+
+This file is the short version for coding agents: the rules agents most often get wrong, a working setup, and a map of the API. Details are in README.md, which ships in this package; the section names below refer to it.
+
+## Rules
+
+1. **Inline-script handlers are copied as source code.** The `handler` given to `createInlineThemeScript` is stringified into a `<script>`, so it must not use imports or variables from outside the function. It breaks at runtime in the browser with no build error. Use the effects from `resonare/effects`, or `defineEffect` with JSON options. (README: "Effects")
+2. **Use one handler for first paint and updates:** pass it to `createInlineThemeScript` (in `<head>`) and to `store.subscribe`.
+3. **Change the DOM only from `store.subscribe` or the inline script**, never from values returned by `useResonare`; those are server values until hydration. (README: "Server-side rendering")
+4. **Call `store.restore()` and `store.sync()` only in the browser.**
+5. **Style from `resolvedThemes`, show the choice from `themes`.** A `media` option's value (e.g. `system`) never appears in `resolvedThemes`; it holds what the option resolves to. (README: "State")
+6. **On the server, media options resolve to their "not matched" value** (`system` → `light`). With per-user `persisted` state, create one store per request and pass the same `persisted` on server and client. (README: "Server-side persistence")
+7. **Saved values aren't validated against the config;** migrate stored data when renaming options. (README: "Changing options later")
+
+## Setup
+
+```ts
+import {
+  type ThemeStoreConfig,
+  createInlineThemeScript,
+  createThemeStore,
+} from 'resonare'
+import {
+  combine,
+  disableTransitions,
+  setColorScheme,
+  setDataAttributes,
+  setThemeColor,
+} from 'resonare/effects'
+
+export const CONFIG = {
+  colorScheme: {
+    options: [
+      {
+        value: 'system',
+        media: ['(prefers-color-scheme: dark)', 'dark', 'light'],
+      },
+      'light',
+      'dark',
+    ],
+  },
+  contrast: { options: ['standard', 'high'] },
+  sidebarWidth: { defaultValue: 240 },
+} as const satisfies ThemeStoreConfig
+
+type Config = typeof CONFIG
+
+export const applyThemes = combine(
+  setDataAttributes(),
+  setColorScheme<Config>(),
+  setThemeColor<Config>({ values: { light: '#fff', dark: '#000' } }),
+  disableTransitions<Config>()
+)
+
+// Render in <head>, e.g. <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+export const themeScript = createInlineThemeScript({
+  key: 'my-app',
+  config: CONFIG,
+  handler: applyThemes,
+})
+
+export const store = createThemeStore(CONFIG)
+
+if (typeof window !== 'undefined') {
+  store.subscribe(applyThemes)
+
+  store.restore()
+
+  store.sync()
+}
+```
+
+Then style from the attributes, e.g. `:root[data-color-scheme='dark'] { --bg: #000; }`.
+
+Lite:
+
+```ts
+import { createInlineThemeScript, createThemeStore } from 'resonare/lite'
+import {
+  combine,
+  disableTransitions,
+  setClassNames,
+  setColorScheme,
+  setThemeColor,
+} from 'resonare/lite/effects'
+
+// class="dark" in dark mode (for Tailwind / shadcn), nothing in light mode
+export const applyTheme = combine(
+  setClassNames({ light: null }),
+  setColorScheme(),
+  setThemeColor({ light: '#fff', dark: '#000' }),
+  disableTransitions()
+)
+
+export const themeScript = createInlineThemeScript({
+  key: 'my-app',
+  handler: applyTheme,
+})
+
+export const store = createThemeStore()
+
+if (typeof window !== 'undefined') {
+  store.subscribe(applyTheme)
+
+  store.restore()
+
+  store.sync()
+}
+```
+
+## API map
+
+- `resonare`:
+  - `createThemeStore(config, { storage?, persisted? })`: `getSnapshot`, `getServerSnapshot`, `setThemes`, `updateSystemOption`, `subscribe`, `restore`, `sync`, `toPersist`, `destroy`.
+  - `createInlineThemeScript({ key?, config, handler })`, or an array of these for several stores.
+  - `getThemesAndOptions(config)`, `getDefaultThemes(config)`.
+  - `localStorageAdapter({ key, type? })`, `memoryStorageAdapter({ key })`.
+  - README: "API", "Storage".
+- `resonare/effects`: each effect works with `store.subscribe` and as a `handler`. Pass `<typeof CONFIG>` to type-check setting names and values. README: "Effects".
+  - `setDataAttributes()`
+  - `setClassNames({ colorScheme: { dark: 'dark' } })`
+  - `setColorScheme({ key?, values? })`
+  - `setThemeColor({ key?, values } | { key?, cssVar })`
+  - `disableTransitions({ keys? })`
+  - `combine(...listeners)`
+  - `defineEffect((state, prev, options) => …)`
+- `resonare/react`, `resonare/solid`, `resonare/svelte`, `resonare/vue`: `useResonare(store)` returns the state and the store's methods. README: "Frameworks".
+- `resonare/lite`: `createThemeStore({ storage?, persisted? })` with `setTheme`, plus `createInlineThemeScript({ key?, handler })`, `localStorageAdapter` and `memoryStorageAdapter`. Its state is `{ theme, resolvedTheme, systemTheme }`. README: "Lite".
+- `resonare/lite/effects`: `setDataAttributes({ key? })`, `setClassNames({ light?, dark? })`, `setColorScheme()`, `setThemeColor({ light, dark } | { cssVar })`, `disableTransitions()`, `combine`, `defineEffect`.
+- `resonare/lite/react`, `resonare/lite/solid`, `resonare/lite/svelte`, `resonare/lite/vue`: `useResonare(store)`.

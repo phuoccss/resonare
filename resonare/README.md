@@ -2,6 +2,8 @@
 
 A small state store for themes and user preferences: color scheme, contrast, spacing, sidebar width, or any other setting your UI offers. [Check out the demo](https://resonare.phuoccss.workers.dev).
 
+Using a coding agent? Point it at [`llms.txt`](https://github.com/phuoccss/resonare/blob/main/resonare/llms.txt): a short reference with the rules agents most often get wrong. It ships in the package (`node_modules/resonare/llms.txt`) and is served at [`/llms.txt`](https://resonare.phuoccss.workers.dev/llms.txt) on the demo site.
+
 ## Features
 
 - **Any number of settings**, each with its own options and default
