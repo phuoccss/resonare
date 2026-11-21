@@ -69,16 +69,12 @@ export const themesAndOptions = getThemesAndOptions(CONFIG)
 const PARAM = {
   key: 'demo',
   config: CONFIG,
-  handler: combine(
+  handler: combine<typeof CONFIG>(
     setDataAttributes(),
-    setColorScheme<typeof CONFIG>(),
-    setThemeColor<typeof CONFIG>({
-      values: { light: '#f5f5f5', dark: '#0a0a0a' },
-    }),
+    setColorScheme(),
+    setThemeColor({ values: { light: '#f5f5f5', dark: '#0a0a0a' } }),
     // The accent color and contrast change the background too.
-    disableTransitions<typeof CONFIG>({
-      keys: ['colorScheme', 'color', 'contrast'],
-    })
+    disableTransitions({ keys: ['colorScheme', 'color', 'contrast'] })
   ),
 } as const satisfies ThemeScriptParameter
 
