@@ -61,7 +61,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'chore(release): version packages'
           pr-title: 'chore(release): version packages'
-          version-script: pnpm changeset version && pnpm i --lockfile-only
+          version-script: pnpm changeset:version
           publish-script: pnpm changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

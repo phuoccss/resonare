@@ -2,6 +2,7 @@
   "name": "resonare-monorepo",
   "private": true,
   "scripts": {
+    "changeset:version": "changeset version && pnpm i --lockfile-only",
     "format": "vp fmt --write --disable-nested-config",
     "lint": "vp lint",
     "prepare": "vp config --no-agent"
