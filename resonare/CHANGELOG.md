@@ -1,5 +1,15 @@
 # resonare
 
+## 0.5.0
+
+### Minor Changes
+
+- [#12](https://github.com/phuoccss/resonare/pull/12) [`3d13f6a`](https://github.com/phuoccss/resonare/commit/3d13f6a5cfcf502e3f6a478771461388eb2002a0) Thanks [@phuoccss](https://github.com/phuoccss)! - `combine<typeof CONFIG>(…)` from `resonare/effects` now checks the setting names and values of every effect inside it, so the config type no longer has to be repeated on each effect. `Effect` from `resonare/effects` now takes the config type (`Effect<typeof CONFIG>`) instead of the state type.
+
+### Patch Changes
+
+- [#11](https://github.com/phuoccss/resonare/pull/11) [`8ac7a78`](https://github.com/phuoccss/resonare/commit/8ac7a78d255b905743d3f1e851dbe0f4612205ea) Thanks [@phuoccss](https://github.com/phuoccss)! - Ship tested framework recipes (`recipes/next.md`, `vite-react.md`, `sveltekit.md`, `nuxt.md`, `tanstack-start.md`) in the package and link them from `llms.txt`.
+
 ## 0.4.1
 
 ### Patch Changes
