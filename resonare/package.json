@@ -16,7 +16,8 @@
   },
   "files": [
     "dist",
-    "llms.txt"
+    "llms.txt",
+    "recipes"
   ],
   "type": "module",
   "sideEffects": false,

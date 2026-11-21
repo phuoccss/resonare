@@ -110,6 +110,17 @@ if (typeof window !== 'undefined') {
 }
 ```
 
+## Recipes
+
+Complete, tested light / dark / system setups per framework with `resonare/lite`, in `recipes/` in this package. Each one is an example app that CI builds and tests in a browser, and ends with what changes for the full `resonare`.
+
+- Next.js (App Router): `recipes/next.md`
+- Vite + React: `recipes/vite-react.md`
+- SvelteKit: `recipes/sveltekit.md`
+- Nuxt: `recipes/nuxt.md`
+- TanStack Start: `recipes/tanstack-start.md`
+- Astro: render the script with `<script is:inline set:html={themeScript} />` in `<head>` (README: "Add the inline script").
+
 ## API map
 
 - `resonare`:

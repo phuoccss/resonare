@@ -1,5 +1,6 @@
 packages:
   - demo
+  - examples/*
   - resonare
 
 allowBuilds:
@@ -20,6 +21,11 @@ catalog:
   '@playwright/test': 1.65.1
   '@size-limit/preset-small-lib': 14.3.0
   '@stylistic/eslint-plugin': 5.10.0
+  '@sveltejs/adapter-node': 6.0.2
+  '@sveltejs/kit': 3.2.0
+  '@sveltejs/vite-plugin-svelte': 7.3.1
+  '@tanstack/react-router': 1.170.46
+  '@tanstack/react-start': 1.169.5
   '@types/node': 26.6.6
   '@types/react': 19.3.0
   '@types/react-dom': 19.3.0
@@ -27,6 +33,8 @@ catalog:
   astro: 7.4.4
   cross-env: 10.1.0
   jsdom: 30.1.3
+  next: 16.4.6
+  nuxt: 4.6.4
   oxc-transform-react: 0.156.0
   portless: 0.15.12
   react: 19.3.1
@@ -40,6 +48,11 @@ catalog:
   vite-plus: 1.4.0
   vue: 3.5.44
   wrangler: 4.156.0
+
+# SvelteKit 3 needs TypeScript's JavaScript API, which TypeScript 7 dropped.
+catalogs:
+  typescript6:
+    typescript: 6.0.3
 
 catalogMode: strict
 cleanupUnusedCatalogs: true

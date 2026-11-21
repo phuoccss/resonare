@@ -12,6 +12,7 @@ Guidance for coding agents working on this repo. For how to _use_ the library, r
   - `src/{react,solid,svelte,vue}.ts` and `src/lite-*.ts`: framework bindings
   - `src/storage.ts`, `src/utils.ts`: storage adapters, constants and script helpers
 - `demo/`: Astro site that uses every binding; deployed by the publish workflow.
+- `examples/`: one minimal app per framework (`next`, `vite-react`, `sveltekit`, `nuxt`, `tanstack-start`), the source of truth for `resonare/recipes/*.md`. `examples/e2e` builds and serves them all and runs the same browser tests against each.
 - `README.md` at the root is a symlink to `resonare/README.md`.
 
 ## Commands
@@ -27,6 +28,7 @@ pnpm format                    # write formatting
 pnpm --filter resonare size    # size-limit for dist/index.js and dist/lite.js
 pnpm turbo build               # package + demo
 pnpm --filter demo test:e2e    # Playwright on the built demo in Chromium, Firefox and WebKit (first run: playwright install)
+pnpm --filter example-e2e test:e2e  # Playwright on every example app
 ```
 
 A pre-commit hook (`.vite-hooks/pre-commit`, installed by `prepare`) runs `vp check --fix` on staged files. CI (`.github/workflows/ci.yml`) runs build, `vp check` and unit tests (Check job), plus the Playwright tests (E2E job), on pull requests and before every publish. The E2E tests in `demo/e2e/` cover first paint with app scripts blocked, hydration warnings, every framework's controls and cross-tab sync. Behavior changes that show in the browser should get a test there.
@@ -43,6 +45,7 @@ A pre-commit hook (`.vite-hooks/pre-commit`, installed by `prepare`) runs `vp ch
   - `import type` for type-only imports.
   - No `any`, except deliberately loose public types, which carry an `oxlint-disable-next-line` comment with the reason.
   - No comments in GitHub workflow files.
+- **Recipes:** code blocks in `resonare/recipes/<framework>.md` labelled with a path must match `examples/<framework>/<path>` exactly (`tests/recipes.test.ts`). Change the example, then copy it into the recipe. Every example needs a recipe, and every recipe needs a line in `llms.txt`.
 - **Docs:** when the public API changes, update `resonare/README.md` and `resonare/llms.txt` together. `tests/llms.test.ts` fails when an entry point or export is missing from `llms.txt`, or when its code examples differ from `demo/src/llms-examples/*`. Those files are the type-checked copies, so edit both.
 
 ## Commits and releases

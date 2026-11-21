@@ -83,8 +83,15 @@ export default defineConfig({
 
       '.astro',
       '.cache',
+      '.next',
+      '.nuxt',
+      '.output',
       '.svelte',
+      '.svelte-kit',
       'dist',
+      'next-env.d.ts',
+      'examples/sveltekit/build',
+      '**/routeTree.gen.ts',
 
       '*.gen',
       '*.gen.*',
@@ -137,6 +144,13 @@ export default defineConfig({
       '**/*.min.*',
       '**/.astro',
       '**/.cache',
+      '**/.next',
+      '**/.nuxt',
+      '**/.output',
+      '**/.svelte-kit',
+      '**/next-env.d.ts',
+      'examples/sveltekit/build',
+      '**/routeTree.gen.ts',
       '**/.eslintcache',
       '**/.rollup.cache',
       '**/.sonda',
@@ -480,6 +494,12 @@ export default defineConfig({
           ],
         },
         plugins: ['react', 'jsx-a11y'],
+      },
+      {
+        files: ['examples/**'],
+        rules: {
+          'vite-plus/prefer-vite-plus-imports': 'off',
+        },
       },
       {
         files: ['**/*-solid.tsx', '**/*-solid-lite.tsx'],
