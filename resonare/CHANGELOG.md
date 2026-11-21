@@ -1,5 +1,11 @@
 # resonare
 
+## 0.4.1
+
+### Patch Changes
+
+- [#5](https://github.com/phuoccss/resonare/pull/5) [`7ecffa9`](https://github.com/phuoccss/resonare/commit/7ecffa954d07b7136e102a49d343f14023f7801d) Thanks [@phuoccss](https://github.com/phuoccss)! - Ship `llms.txt`, a short reference for coding agents, in the package.
+
 ## 0.4.0
 
 ### Minor Changes
