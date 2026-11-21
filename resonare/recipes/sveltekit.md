@@ -25,6 +25,10 @@ export const applyTheme = combine(
 )
 
 export const themeScript = createInlineThemeScript({ handler: applyTheme })
+
+// For {@html} in <svelte:head>. Built here, not in a .svelte file, where
+// the closing tag would end the component's own <script> block.
+export const themeScriptTag = `<script>${themeScript}</script>`
 ```
 
 ## 2. Store
@@ -49,21 +53,18 @@ if (typeof window !== 'undefined') {
 
 ## 3. Script in `<head>`
 
-`<svelte:head>` in the root layout is rendered into the server HTML, so the script runs before first paint. The tag is built in the script section, with `<\/script>` so it doesn't end that block early:
+`<svelte:head>` in the root layout is rendered into the server HTML, so the script runs before first paint. The tag itself is built in `theme.ts` (`themeScriptTag` above): written in a `.svelte` file, its closing `</script>` would end the component's own `<script>` block.
 
 ```svelte src/routes/+layout.svelte
 <script lang="ts">
-  import { themeScript } from '#lib/theme'
+  import { themeScriptTag } from '#lib/theme'
 
   let { children } = $props()
-
-  // `<\/script>` so it doesn't end this <script> block.
-  const themeTag = `<script>${themeScript}<\/script>`
 </script>
 
 <!-- Rendered into the server HTML, so it runs before first paint. -->
 <svelte:head>
-  {@html themeTag}
+  {@html themeScriptTag}
 </svelte:head>
 
 {@render children()}

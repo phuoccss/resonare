@@ -16,3 +16,7 @@ export const applyTheme = combine(
 )
 
 export const themeScript = createInlineThemeScript({ handler: applyTheme })
+
+// For {@html} in <svelte:head>. Built here, not in a .svelte file, where
+// the closing tag would end the component's own <script> block.
+export const themeScriptTag = `<script>${themeScript}</script>`
