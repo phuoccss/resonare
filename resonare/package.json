@@ -15,7 +15,8 @@
     "directory": "resonare"
   },
   "files": [
-    "dist"
+    "dist",
+    "llms.txt"
   ],
   "type": "module",
   "sideEffects": false,
