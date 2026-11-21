@@ -8,12 +8,26 @@ import {
   localStorageAdapter,
 } from 'resonare'
 import {
+  combine,
+  disableTransitions,
+  setColorScheme,
+  setDataAttributes,
+  setThemeColor,
+} from 'resonare/effects'
+import {
   type ThemeScriptParameter as LiteThemeScriptParameter,
   type ThemeStore as LiteThemeStore,
   createInlineThemeScript as createLiteInlineThemeScript,
   createThemeStore as createLiteThemeStore,
   localStorageAdapter as liteLocalStorageAdapter,
 } from 'resonare/lite'
+import {
+  combine as liteCombine,
+  disableTransitions as liteDisableTransitions,
+  setColorScheme as liteSetColorScheme,
+  setDataAttributes as liteSetDataAttributes,
+  setThemeColor as liteSetThemeColor,
+} from 'resonare/lite/effects'
 
 export const CONFIG = {
   color: {
@@ -55,24 +69,30 @@ export const themesAndOptions = getThemesAndOptions(CONFIG)
 const PARAM = {
   key: 'demo',
   config: CONFIG,
-  handler: ({ resolvedThemes }) => {
-    const root = document.documentElement
-
-    Object.entries(resolvedThemes).forEach(([key, value]) => {
-      root.dataset[key] = String(value)
+  handler: combine(
+    setDataAttributes(),
+    setColorScheme<typeof CONFIG>(),
+    setThemeColor<typeof CONFIG>({
+      values: { light: '#f5f5f5', dark: '#0a0a0a' },
+    }),
+    // The accent color and contrast change the background too.
+    disableTransitions<typeof CONFIG>({
+      keys: ['colorScheme', 'color', 'contrast'],
     })
-  },
+  ),
 } as const satisfies ThemeScriptParameter
 
 const LITE_PARAM = {
   key: 'demo-lite',
-  handler: ({ resolvedTheme, systemTheme }) => {
-    const root = document.documentElement
-
-    root.dataset.theme = resolvedTheme
-
-    root.dataset.system = systemTheme
-  },
+  handler: liteCombine(
+    liteSetDataAttributes(),
+    ({ systemTheme }) => {
+      document.documentElement.dataset.system = systemTheme
+    },
+    liteSetColorScheme(),
+    liteSetThemeColor({ light: '#f5f5f5', dark: '#0a0a0a' }),
+    liteDisableTransitions()
+  ),
 } as const satisfies LiteThemeScriptParameter
 
 const SLOT = '__resonareDemoStore'
@@ -130,7 +150,7 @@ function connect(
     return () => {
       connections -= 1
 
-      if (connections > 0) {
+      if (connections) {
         return
       }
 

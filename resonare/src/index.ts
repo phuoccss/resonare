@@ -1,6 +1,5 @@
-import { DEFAULT_KEY } from './constants'
-import { toScriptFunction, toScriptJson } from './script'
 import { type StorageAdapterCreate, localStorageAdapter } from './storage'
+import { DEFAULT_KEY, toScriptFunction, toScriptJson } from './utils'
 
 export * from './storage'
 
@@ -94,6 +93,17 @@ type NonSystemOptionValues<
   : never
 
 /**
+ * The values setting `K` can resolve to, as found in `resolvedThemes`: its
+ * options without the `media` one, or the free value's type.
+ */
+export type ResolvedThemeValue<
+  T extends ThemeStoreConfig,
+  K extends keyof T,
+> = T[K] extends { options: ReadonlyArray<unknown> }
+  ? NonSystemOptionValues<T, K>
+  : Themes<T>[K]
+
+/**
  * For each setting with a `media` option, the value that option currently
  * resolves to, whether or not it is selected.
  */
@@ -118,7 +128,17 @@ type Snapshot<T extends ThemeStoreConfig> = {
   resolvedSystemThemes: ResolvedSystemThemes<T>
 }
 
-type Listener<T extends ThemeStoreConfig> = (value: Snapshot<T>) => void
+/** The state passed to listeners; see `getSnapshot`. */
+export type ThemeSnapshot<T extends ThemeStoreConfig> = Snapshot<T>
+
+/**
+ * Receives the new state and, except in the inline script (first paint), the
+ * state before the change.
+ */
+type Listener<T extends ThemeStoreConfig> = (
+  value: Snapshot<T>,
+  prev?: Snapshot<T>
+) => void
 
 type PersistedSystemOptionPairs = Record<string, [string, string]>
 
@@ -342,10 +362,12 @@ export function createThemeStore<T extends ThemeStoreConfig>(
   const setThemesAndNotify = (themes?: Partial<Themes<T>>): void => {
     currentThemes = { ...currentThemes, ...themes }
 
+    const prev = snapshot
+
     snapshot = createSnapshot()
 
     for (const listener of listeners) {
-      listener(snapshot)
+      listener(snapshot, prev)
     }
   }
 
@@ -470,9 +492,9 @@ export function createThemeStore<T extends ThemeStoreConfig>(
     },
 
     /**
-     * Calls `callback` with the new state (see `getSnapshot`) after every
-     * change, including OS preference changes. Returns an unsubscribe
-     * function.
+     * Calls `callback` with the new state (see `getSnapshot`) and the state
+     * before it after every change, including OS preference changes. Returns
+     * an unsubscribe function.
      */
     subscribe: (callback: Listener<T>): (() => void) => {
       listeners.add(callback)
@@ -523,11 +545,21 @@ export type ThemeStore<T extends ThemeStoreConfig> = ReturnType<
 
 const restoreScript = <T extends ThemeValue>(
   params: Array<
-    [string, Array<[string, T] | [string, T, T, string, T, T]>, Listener<any>]
+    [
+      string,
+      Array<[string, T] | [string, T, T, string, T, T]>,
+      (state: object) => void,
+    ]
   >
 ) => {
   params.forEach(([key, flattenedConfig, handler]) => {
-    let persisted: any
+    let persisted:
+      | {
+          themes?: Record<string, T>
+          systemOptions?: Record<string, [T, T]>
+        }
+      | null
+      | undefined
 
     // Blocked storage or bad JSON must not stop the handler from running.
     try {
@@ -589,8 +621,9 @@ export type ThemeScriptParameter = {
   /**
    * Applies the state to the page; receives the same value as `subscribe`.
    * It is copied into the script as source code, so it can't use variables
-   * from outside the function.
+   * from outside the function. Typed loosely so a handler fits any config.
    */
+  // oxlint-disable-next-line typescript/no-explicit-any
   handler: Listener<any>
 }
 

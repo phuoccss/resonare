@@ -1,6 +1,5 @@
-import { DEFAULT_LITE_KEY } from './constants'
-import { toScriptFunction, toScriptJson } from './script'
 import { type StorageAdapterCreate, localStorageAdapter } from './storage'
+import { DEFAULT_LITE_KEY, toScriptFunction, toScriptJson } from './utils'
 
 export * from './storage'
 
@@ -14,7 +13,14 @@ type Snapshot = {
   systemTheme: ResolvedTheme
 }
 
-type Listener = (value: Snapshot) => void
+/** The state passed to listeners; see `getSnapshot`. */
+export type ThemeSnapshot = Snapshot
+
+/**
+ * Receives the new state and, except in the inline script (first paint), the
+ * state before the change.
+ */
+type Listener = (value: Snapshot, prev?: Snapshot) => void
 
 type ThemeStoreOptions = {
   persisted?: Theme
@@ -98,10 +104,12 @@ export function createThemeStore({
   const setThemeAndNotify = (next: Theme): void => {
     theme = next
 
+    const prev = snapshot
+
     snapshot = createSnapshot()
 
     for (const listener of listeners) {
-      listener(snapshot)
+      listener(snapshot, prev)
     }
   }
 
@@ -156,9 +164,9 @@ export function createThemeStore({
     },
 
     /**
-     * Calls `callback` with the new state (see `getSnapshot`) after every
-     * change, including OS preference changes. Returns an unsubscribe
-     * function.
+     * Calls `callback` with the new state (see `getSnapshot`) and the state
+     * before it after every change, including OS preference changes. Returns
+     * an unsubscribe function.
      */
     subscribe: (callback: Listener): (() => void) => {
       listeners.add(callback)

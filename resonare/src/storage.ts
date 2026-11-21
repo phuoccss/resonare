@@ -1,4 +1,4 @@
-import { DEFAULT_KEY } from './constants'
+import { DEFAULT_KEY } from './utils'
 
 /**
  * Where a store saves its state. Values are strings: the full store saves
