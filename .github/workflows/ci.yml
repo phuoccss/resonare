@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  # Called by the publish workflow, so pushes to main are checked before
+  # anything is published.
+  workflow_call:
+
+concurrency:
+  # Prefixed so it never shares a group with the calling publish workflow.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        with:
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        shell: bash
+        run: pnpm i --frozen-lockfile --ignore-scripts
+
+      # Tests and the demo's type check import the built package.
+      - name: Build
+        run: pnpm turbo build
+
+      - name: Format, lint & type check
+        run: pnpm exec vp check
+
+      - name: Test
+        run: pnpm --filter resonare test
