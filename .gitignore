@@ -11,6 +11,10 @@ yarn-error.log*
 .astro
 dist
 
+# Playwright
+playwright-report
+test-results
+
 # Cloudflare
 .wrangler
 worker-configuration.d.ts

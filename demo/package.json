@@ -5,7 +5,8 @@
   "scripts": {
     "build": "astro build",
     "deploy": "wrangler deploy",
-    "dev": "portless demo.resonare astro dev"
+    "dev": "portless demo.resonare astro dev",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "astro": "catalog:",
@@ -22,6 +23,7 @@
     "@astrojs/solid-js": "catalog:",
     "@astrojs/svelte": "catalog:",
     "@astrojs/vue": "catalog:",
+    "@playwright/test": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "portless": "catalog:",
