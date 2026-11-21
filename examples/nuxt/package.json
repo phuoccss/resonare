@@ -1,0 +1,17 @@
+{
+  "name": "example-nuxt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "start": "cross-env PORT=4404 node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "nuxt": "catalog:",
+    "resonare": "workspace:*",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "cross-env": "catalog:"
+  }
+}

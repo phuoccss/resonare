@@ -1,0 +1,24 @@
+{
+  "name": "example-sveltekit",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*.ts"
+  },
+  "scripts": {
+    "build": "vp build",
+    "start": "cross-env PORT=4403 node build"
+  },
+  "dependencies": {
+    "resonare": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "catalog:",
+    "@sveltejs/kit": "catalog:",
+    "@sveltejs/vite-plugin-svelte": "catalog:",
+    "cross-env": "catalog:",
+    "svelte": "catalog:",
+    "typescript": "catalog:typescript6",
+    "vite": "catalog:"
+  }
+}

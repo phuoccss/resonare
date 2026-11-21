@@ -10,6 +10,13 @@ yarn-error.log*
 # Builds
 .astro
 dist
+.next
+next-env.d.ts
+.nuxt
+.output
+.svelte-kit
+examples/sveltekit/build
+routeTree.gen.ts
 
 # Playwright
 playwright-report

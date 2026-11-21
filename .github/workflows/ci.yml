@@ -11,6 +11,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NUXT_TELEMETRY_DISABLED: 1
+
 jobs:
   check:
     name: Check
@@ -64,5 +68,8 @@ jobs:
       - name: Install browsers
         run: pnpm --filter demo exec playwright install --with-deps chromium firefox webkit
 
-      - name: Test
+      - name: Test demo
         run: pnpm --filter demo test:e2e
+
+      - name: Test examples
+        run: pnpm --filter example-e2e test:e2e

@@ -147,6 +147,8 @@ function ColorSchemeSelect() {
 
 See [Frameworks](#frameworks) for Solid, Svelte and Vue.
 
+Complete, tested setups for [Next.js](https://github.com/phuoccss/resonare/blob/main/resonare/recipes/next.md), [Vite + React](https://github.com/phuoccss/resonare/blob/main/resonare/recipes/vite-react.md), [SvelteKit](https://github.com/phuoccss/resonare/blob/main/resonare/recipes/sveltekit.md), [Nuxt](https://github.com/phuoccss/resonare/blob/main/resonare/recipes/nuxt.md) and [TanStack Start](https://github.com/phuoccss/resonare/blob/main/resonare/recipes/tanstack-start.md) are in `recipes/`. They use `resonare/lite` for a light / dark / system toggle, and each one is an example app that CI builds and tests in a browser.
+
 ## Effects
 
 `resonare/effects` (and `resonare/lite/effects`) has the side effects most apps need when the theme changes. Each one works both with `store.subscribe` and as the inline script's `handler`, so the page is right on first paint and stays right afterwards. Combine them into one handler with `combine(...)`; they run in order.

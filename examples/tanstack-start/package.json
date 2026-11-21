@@ -1,0 +1,23 @@
+{
+  "name": "example-tanstack-start",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vp build",
+    "start": "vp preview --port 4405 --strictPort"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "catalog:",
+    "@tanstack/react-start": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "resonare": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
