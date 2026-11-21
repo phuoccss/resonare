@@ -1,15 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite-plus'
 
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      CI: string | undefined
-    }
-  }
-}
-
-const isCI = !!process.env.CI
+const isCI = !!process.env['CI']
 
 export default defineConfig({
   pack: [
@@ -20,11 +12,13 @@ export default defineConfig({
         solid: 'src/solid.ts',
         svelte: 'src/svelte.ts',
         vue: 'src/vue.ts',
+        effects: 'src/effects.ts',
         lite: 'src/lite.ts',
         'lite-react': 'src/lite-react.ts',
         'lite-solid': 'src/lite-solid.ts',
         'lite-svelte': 'src/lite-svelte.ts',
         'lite-vue': 'src/lite-vue.ts',
+        'lite-effects': 'src/lite-effects.ts',
       },
       dts: {
         sourcemap: true,

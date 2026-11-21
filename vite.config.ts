@@ -1,12 +1,9 @@
 import { defineConfig } from 'vite-plus'
 
 export default defineConfig({
-  // staged: {
-  //   '*.css': 'stylelint --fix --allow-empty-input',
-  //   '*.{ts,tsx,css,json,jsonc,json5,md,mdx,yaml,yml}':
-  //     'vp fmt --write --disable-nested-config',
-  //   '*.{ts,tsx,.md,.mdx}': 'vp lint --fix && eslint --cache --fix',
-  // },
+  staged: {
+    '*': 'vp check --fix',
+  },
   fmt: {
     endOfLine: 'lf',
     insertFinalNewline: true,
@@ -370,19 +367,6 @@ export default defineConfig({
           'typescript/no-import-type-side-effects': 'error',
           'typescript/only-throw-error': 'off',
           'typescript/prefer-for-of': 'off',
-          'typescript/strict-boolean-expressions': [
-            'warn',
-            {
-              allowNumber: false,
-              allowString: true,
-              allowNullableBoolean: true,
-              allowNullableEnum: true,
-              allowNullableNumber: true,
-              allowNullableObject: true,
-              allowNullableString: true,
-              allowAny: false,
-            },
-          ],
         },
         jsPlugins: ['@stylistic/eslint-plugin'],
         env: {
@@ -496,6 +480,14 @@ export default defineConfig({
           ],
         },
         plugins: ['react', 'jsx-a11y'],
+      },
+      {
+        files: ['**/*-solid.tsx', '**/*-solid-lite.tsx'],
+        plugins: ['react', 'jsx-a11y'],
+        rules: {
+          'react/no-unknown-property': 'off',
+          'jsx-a11y/label-has-associated-control': 'off',
+        },
       },
       {
         files: ['**/*.{md,mdx}/**'],

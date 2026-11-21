@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "format": "vp fmt --write --disable-nested-config",
-    "lint": "vp lint"
+    "lint": "vp lint",
+    "prepare": "vp config --no-agent"
   },
   "devDependencies": {
     "@changesets/changelog-github": "catalog:",
@@ -11,6 +12,7 @@
     "@commitlint/cli": "catalog:",
     "@commitlint/config-conventional": "catalog:",
     "@stylistic/eslint-plugin": "catalog:",
+    "@types/node": "catalog:",
     "turbo": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
