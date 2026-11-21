@@ -277,6 +277,9 @@ importers:
       '@stylistic/eslint-plugin':
         specifier: 'catalog:'
         version: 5.10.0(eslint@10.11.0(jiti@2.6.1)(supports-color@10.2.2))
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
       node:
         specifier: runtime:lts
         version: runtime:26.13.0
